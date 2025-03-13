@@ -289,7 +289,9 @@
             const resultadoDiv = document.getElementById("resultado");
         
             try {
-                const response = await fetch(`http://127.0.0.1:5000/buscar?documento=${documento}`);
+                const apiUrl = "https://calculadora-fechas-production.up.railway.app";
+                const response = await fetch(`${apiUrl}/buscar?documento=${documento}`);
+
                 const data = await response.json();
         
                 if (data.status === "success") {
