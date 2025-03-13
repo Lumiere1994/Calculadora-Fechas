@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Cartera</title>
+    <style>
+        body {
+            background-color: #0033CC;
+            font-family: Arial, sans-serif;
+            color: white;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        h1 {
+            border: 2px solid white;
+            padding: 10px 20px;
+            color: black;
+            background-color: white;
+            font-family: 'Georgia', serif;
+            display: inline-block;
+            margin: 20px auto;
+            border-radius: 10px;
+        }
+
+        #documento {
+            font-size: 20px;
+            padding: 10px;
+            width: 15%;
+            margin: 15px auto;
+            border-radius: 5px;
+            border: 2px solid #fff;
+            display: block;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            color: white;
+            background-color: #0056b3;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 10px auto;
+        }
+
+        button:hover {
+            background-color: #003d80;
+        }
+
+        #pagina2 {
+            display: none;
+        }
+
+        .input-fecha {
+            font-size: 18px;
+            padding: 8px;
+            width: 40%;
+            border-radius: 5px;
+            border: 2px solid #ccc;
+        }
+
+        #resultado, #mensajeEnvio {
+            color: white;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #fechaSection {
+            background-color: white;
+            color: black;
+            font-family: 'Georgia', serif;
+            display: inline-block;
+            margin: 15px auto;
+            padding: 15px;
+            border-radius: 10px;
+            width: 20%;
+            border: 1px solid #fff;
+        }
+
+        .fecha-row {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            justify-content: space-between;
+        }
+
+        .fecha-row label {
+            font-size: 18px;
+            font-weight: bold;
+            flex: 0 0 auto;
+            text-align: right;
+            padding-right: 10px;
+            white-space: nowrap;
+        }
+
+        /* Individual info boxes */
+        .info-box {
+            background-color: white;
+            color: black;
+            font-family: 'Georgia', serif;
+            margin: 10px auto;
+            padding: 8px 15px;
+            border-radius: 10px;
+            width: 18%;  /* Reduced from 25% to 18% */
+            border: 1px solid #fff;
+            display: block;
+        }
+
+        .info-box p {
+            font-size: 18px;
+            margin: 6px 0;
+            color: black;
+        }
+
+        #doc, #ids {
+            font-size: 16px;
+            font-weight: bold;
+            color: black;
+        }
+
+        #generarConsultaBtn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
+            color: white;
+            background-color: #808080;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #generarConsultaBtn:hover {
+            background-color: #555;
+        }
+        
+        /* Generate Date button - smaller padding */
+        #fechaSection button {
+            padding: 10px 20px;
+            margin: 8px auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="pagina1">
+        <h1>Consulta de Cartera</h1>
+        <input type="text" id="documento" placeholder="Ingrese Documento">
+        <button onclick="buscarDocumento()">Buscar</button>
+        <div id="resultado"></div>
+    </div>
+
+    <div id="pagina2" style="display:none;">
+        <h1>Resultado</h1>
+        
+        <!-- Document info box comes second -->
+        <div class="info-box">
+            <p><strong>Documento:</strong> <span id="doc" style="font-weight: normal;"></span></p>
+        </div>
+        
+        <!-- Credit ID info box comes third -->
+        <div class="info-box">
+            <p><strong>ID del crédito:</strong> <span id="ids" style="font-weight: normal;"></span></p>
+        </div>
+        
+        <!-- Dates section comes fourth (without "Registrar Fechas" heading) -->
+        <div id="fechaSection">
+            <div class="fecha-row">
+                <label>Fecha Corte:</label>
+                <input type="text" id="fechaSM" class="input-fecha" placeholder="dd/mm/yyyy">
+            </div>
+            
+            <div class="fecha-row">
+                <label>Fecha Pago:</label>
+                <input type="text" id="fechaPago" class="input-fecha" placeholder="dd/mm/yyyy">
+            </div>
+                     
+            <!-- Generate Date button positioned directly below inputs -->
+            <button onclick="generarFechaBoton()">Generar Fecha</button>
+        </div>
+
+        <div id="mensajeEnvio"></div>
+
+        <button id="generarConsultaBtn" onclick="generarOtraConsulta()">Generar otra consulta</button>
+    </div>
+
+    <script>
+        function formatFecha(fecha) {
+            const [year, month, day] = fecha.split("-");
+            return `${day}/${month}/${year}`;
+        }
+        
+        function corregirFecha(fecha) {
+            const partes = fecha.split("/");
+            const dia = partes[0].padStart(2, "0");
+            const mes = partes[1].padStart(2, "0");
+            const anio = partes[2];
+            return `${dia}/${mes}/${anio}`;
+        }
+        
+        document.getElementById("fechaPago").addEventListener("input", (event) => {
+            const value = event.target.value;
+            if (value.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+                event.target.value = corregirFecha(value);
+            } else if (value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                event.target.value = formatFecha(value);
+            }
+        });
+        
+        document.getElementById("fechaSM").addEventListener("input", (event) => {
+            const value = event.target.value;
+            if (value.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) {
+                event.target.value = corregirFecha(value);
+            } else if (value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                event.target.value = formatFecha(value);
+            }
+        });
+                      
+        function generarFecha() {
+            const fechaHoy = new Date(); // Fecha de hoy (J8)
+            const fechaPago = document.getElementById("fechaPago").value; // J12
+            const fechaSM = document.getElementById("fechaSM").value; // J16
+        
+            const festivos = [
+                "2025-01-01", "2025-01-06", "2025-03-24", "2025-04-17", "2025-04-18",
+                "2025-05-01", "2025-06-02", "2025-06-23", "2025-06-30", "2025-07-20",
+                "2025-08-07", "2025-08-18", "2025-10-13", "2025-11-03", "2025-11-17",
+                "2025-12-08", "2025-12-25"
+            ];
+        
+            // Convertir las fechas de pago y SM a objetos de fecha
+            const fechaPagoObj = new Date(fechaPago.split("/").reverse().join("-"));
+            const fechaSMObj = new Date(fechaSM.split("/").reverse().join("-"));
+        
+            // Lógica para determinar si es Pago Inmediato o una fecha de pago especial
+            if (fechaPagoObj.getMonth() === fechaSMObj.getMonth() && fechaPagoObj.getMonth() === fechaHoy.getMonth() && fechaHoy >= fechaSMObj && fechaHoy <= fechaPagoObj) {
+                return "<span style='font-weight: bold; color: red;'>Pago Inmediato</span>";
+            }
+        
+            // Si no es Pago Inmediato, calculamos según las reglas de fechas
+            let fechaResultado = "";
+            const diaSM = fechaSMObj.getDate();
+        
+            if (diaSM >= 1 && diaSM <= 8) {
+                fechaResultado = calcularFechaEspecial(fechaHoy, 10, festivos);
+            } else if (diaSM >= 9 && diaSM <= 15) {
+                fechaResultado = calcularFechaEspecial(fechaHoy, 18, festivos);
+            } else if (diaSM >= 16 && diaSM <= 23) {
+                fechaResultado = calcularFechaEspecial(fechaHoy, 25, festivos);
+            } else if (diaSM >= 24 && diaSM <= 31) {
+                fechaResultado = calcularFechaEspecial(fechaHoy, 2, festivos, true);
+            }
+        
+            return fechaResultado;
+        }
+        
+        function calcularFechaEspecial(fechaHoy, dia, festivos, siguienteMes = false) {
+            const mes = siguienteMes ? fechaHoy.getMonth() + 1 : fechaHoy.getMonth();
+            const anio = siguienteMes ? fechaHoy.getFullYear() + 1 : fechaHoy.getFullYear();
+        
+            const fechaEspecial = new Date(anio, mes, dia);
+            if (fechaEspecial.getDay() === 0 || fechaEspecial.getDay() === 6 || festivos.includes(fechaEspecial.toISOString().split("T")[0])) {
+                return calcularFechaEspecial(fechaHoy, dia + 1, festivos, siguienteMes);
+            } else {
+                return fechaEspecial.toLocaleDateString();
+            }
+        }
+        
+      
+        function generarFechaBoton() {
+            const fechaResultado = generarFecha();
+            const mensajeDiv = document.getElementById("mensajeEnvio");
+            mensajeDiv.innerHTML = `<p>Fecha generada: ${fechaResultado}</p>`;
+            
+            // Desactivar los campos de fecha
+            document.getElementById("fechaPago").disabled = true;
+            document.getElementById("fechaSM").disabled = true;
+            document.querySelector("button[onclick='generarFechaBoton()']").disabled = true; // Desactivar el botón
+        }
+        
+        async function buscarDocumento() {
+            const documento = document.getElementById("documento").value;
+            const resultadoDiv = document.getElementById("resultado");
+        
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/buscar?documento=${documento}`);
+                const data = await response.json();
+        
+                if (data.status === "success") {
+                    document.getElementById("pagina1").style.display = "none";
+                    document.getElementById("pagina2").style.display = "block";
+                    document.getElementById("doc").textContent = data.documento;
+                    document.getElementById("ids").textContent = data.ids.join(", ");
+                } else {
+                    resultadoDiv.innerHTML = `<p>${data.message}</p>`;
+                }
+            } catch (error) {
+                resultadoDiv.innerHTML = `<p>Error al consultar la API.</p>`;
+            }
+        }
+        
+        function generarOtraConsulta() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
