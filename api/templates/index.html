@@ -289,9 +289,7 @@
             const resultadoDiv = document.getElementById("resultado");
         
             try {
-                const apiUrl = "https://calculadora-fechas-production.up.railway.app";
-                const response = await fetch(`${apiUrl}/buscar?documento=${documento}`);
-
+                const url = `https://spirited-strength-production.up.railway.app/api?documento=${documento}`;
                 const data = await response.json();
         
                 if (data.status === "success") {
